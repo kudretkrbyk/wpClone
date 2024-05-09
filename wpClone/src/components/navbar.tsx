@@ -14,31 +14,31 @@ export default function Navbar() {
           <div className=" hover:bg-slate-300 hover:rounded-full hover:p-2 p-2">
             {" "}
             <i>
-              <BsChatLeftText className="size-8 " />
+              <BsChatLeftText className="size-8 text-gray-500" />
             </i>
           </div>
 
           <i>
-            <RiGroupLine className="size-8" />
+            <RiGroupLine className="size-8  text-gray-500" />
           </i>
           <i>
-            <HiStatusOnline className="size-8" />
+            <HiStatusOnline className="size-8  text-gray-500" />
           </i>
           <i>
-            <TbMessageCircle2 className="size-8" />
+            <TbMessageCircle2 className="size-8  text-gray-500" />
           </i>
 
           <i>
-            <div className="border-xl border-black border-b-2 w-12"></div>
+            <div className="border-xl border-gray-500 border-b-2 w-12"></div>
           </i>
           <i>
-            <FaRegStar className="size-8" />
+            <FaRegStar className="size-8  text-gray-500" />
           </i>
         </div>
         <div className="flex flex-col items-center justify-center gap-4">
           {" "}
           <i>
-            <IoMdSettings className="size-8" />
+            <IoMdSettings className="size-8  text-gray-500" />
           </i>{" "}
           <div className="">
             <img

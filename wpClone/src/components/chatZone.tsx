@@ -8,35 +8,35 @@ import { FaMicrophone } from "react-icons/fa";
 
 export default function ChatZone() {
   return (
-    <div className="w-[800px]">
+    <div className="w-[800px] h-screen">
       <div className="   h-screen flex flex-col items-center justify-between">
-        <div className="flex items-center justify-between bg-gray-200 w-full">
+        <div className="flex items-center justify-between bg-gray-200 w-full h-20">
           <div className="flex p-4 items-center justify-center gap-4">
             <div className="">
               <img
-                className="size-16 rounded-full object-cover"
+                className="size-10 rounded-full object-cover"
                 src="https://i.insider.com/612f86d79ef1e50018f92070?width=700"
               ></img>
             </div>
             <div> isim Soyisim</div>
           </div>
 
-          <div className="flex items-center justify-center gap-2 p-2">
+          <div className="flex items-center justify-center gap-6 p-2">
             <div>
               <button className="border-2">
-                <IoVideocam className="size-7" />
+                <IoVideocam className="size-5 text-gray-500" />
               </button>
             </div>
             <div>
               {" "}
               <button className="border-2">
-                <LuSearch className="size-7" />
+                <LuSearch className="size-5 text-gray-500" />
               </button>
             </div>
             <div>
               {" "}
               <button className="border-2">
-                <HiOutlineDotsVertical className="size-7" />
+                <HiOutlineDotsVertical className="size-5 text-gray-500" />
               </button>
             </div>
           </div>
@@ -63,20 +63,20 @@ export default function ChatZone() {
         </div>
         <div className=" bg-gray-300 flex items-center justify-center gap-4 w-full p-4 h-20">
           <div>
-            <FaRegSmile className="size-7" />
+            <FaRegSmile className="size-5 text-gray-500" />
           </div>
           <div>
-            <FaPlus className="size-7" />
+            <FaPlus className="size-5 text-gray-500" />
           </div>
           <div className="w-full p-4 ">
             <input
               type="text"
               placeholder="Bir Mesaj Yazın"
-              className=" cursor-text  rounded-lg bg-gray-200 text-[#8796a1] text-sm font-light  px-4 py-2 w-[400px] h-[35px] placeholder:p-4 "
+              className=" cursor-text  rounded-lg bg-gray-200 text-[#8796a1] text-sm font-light  px-4 py-2 w-full h-[35px] placeholder:p-4 "
             />
           </div>
           <div>
-            <FaMicrophone className="size-7" />
+            <FaMicrophone className="size-5 text-gray-500" />
           </div>
         </div>
       </div>
