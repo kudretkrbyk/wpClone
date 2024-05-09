@@ -3,18 +3,8 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 
-const sendPersons = require("./sendPersons");
-
-const port = process.env.PORT || 3000;
 const app = express();
-
-// Socket.IO'yu HTTP sunucusuna bağlayın
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: "*",
-  },
-});
+const port = process.env.PORT || 3000;
 
 const serviceAccount = require("./key.json");
 
@@ -25,38 +15,36 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-let persons = [];
+// Socket.IO'yu HTTP sunucusuna bağlayın
+const server = http.createServer(app);
+const io = socketIo(server);
 
-// Tüm kişileri alma ve saklama
+// Verileri al ve Socket.IO üzerinden frontend'e gönder
 const getPersons = async () => {
   try {
     const personsRef = db.collection("persons");
     const snapshot = await personsRef.get();
 
-    persons = [];
+    const persons = [];
     snapshot.docs.forEach((doc) => {
       const data = doc.data();
       persons.push(data);
     });
+
+    io.emit("initialData", persons); // Verileri frontend'e gönder
   } catch (error) {
     console.error("Veriler alınamadı:", error);
   }
-  console.log(persons);
-  sendPersons(persons);
 };
-// İlk başta verileri alıyoruz
-getPersons();
+
+// Arka planda verileri güncelle
+setInterval(() => {
+  getPersons(); // Her 5 dakikada bir verileri güncelle
+}, 300000); // 300000 ms = 5 dakika
+
 // Socket bağlantı olayını dinle
 io.on("connection", (socket) => {
   console.log("Bir kullanıcı bağlandı");
-
-  // Bağlı istemcilere mevcut kişileri gönder
-  socket.emit("initialData", persons);
-
-  // Bağlantı kesilme olayını dinleyin
-  socket.on("disconnect", () => {
-    console.log("Bir kullanıcı ayrıldı");
-  });
 });
 
 // HTTP sunucusunu belirtilen portta dinle
