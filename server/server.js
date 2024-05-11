@@ -3,9 +3,9 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 
-const sendPersons = require("./sendPersons");
+const getPersons = require("./requests/getPersons");
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const app = express();
 
 // Socket.IO'yu HTTP sunucusuna bağlayın
@@ -24,28 +24,12 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-
 let persons = [];
-
-// Tüm kişileri alma ve saklama
-const getPersons = async () => {
-  try {
-    const personsRef = db.collection("persons");
-    const snapshot = await personsRef.get();
-
-    persons = [];
-    snapshot.docs.forEach((doc) => {
-      const data = doc.data();
-      persons.push(data);
-    });
-  } catch (error) {
-    console.error("Veriler alınamadı:", error);
-  }
-  console.log(persons);
-  sendPersons(persons);
-};
 // İlk başta verileri alıyoruz
-getPersons();
+getPersons((getPersons) => {
+  persons = getPersons;
+});
+
 // Socket bağlantı olayını dinle
 io.on("connection", (socket) => {
   console.log("Bir kullanıcı bağlandı");

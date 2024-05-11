@@ -1,14 +1,23 @@
-export const getProduct = async (req, res, next) => {
+const admin = require("firebase-admin");
+
+const getPersons = async (callback) => {
+  const serviceAccount = require("../key.json");
+  const db = admin.firestore();
+  let persons = [];
+
   try {
-    const id = req.params.id;
-    const product = doc(db, "persons", id);
-    const data = await getDoc(product);
-    if (data.exists()) {
-      res.status(200).send(data.data());
-    } else {
-      res.status(404).send("product not found");
-    }
+    const personsRef = db.collection("persons");
+    const snapshot = await personsRef.get();
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      persons.push(data);
+    });
+
+    callback(persons);
   } catch (error) {
-    res.status(400).send(error.message);
+    console.error("Veriler alınamadı:", error);
   }
 };
+
+module.exports = getPersons;

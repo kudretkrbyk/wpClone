@@ -1,9 +1,9 @@
 import { MdOutlineFilterList } from "react-icons/md";
-import { RiGroupLine } from "react-icons/ri";
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { LuSearch } from "react-icons/lu";
+import { TbMessagePlus } from "react-icons/tb";
 
-export default function Chats({ personss }) {
+export default function Chats({ personss, handleNewChat }: any) {
   console.log(personss);
 
   return (
@@ -16,7 +16,10 @@ export default function Chats({ personss }) {
               <div>
                 {" "}
                 <i>
-                  <RiGroupLine className=" text-gray-400 size-8" />
+                  <TbMessagePlus
+                    onClick={handleNewChat}
+                    className=" text-gray-400 size-8"
+                  />
                 </i>
               </div>
               <div>
@@ -61,9 +64,9 @@ export default function Chats({ personss }) {
                   <div className="flex flex-col items-start justify-center w-full">
                     <div className="flex items-start justify-between w-full">
                       <div className="text-black">{person.Name}</div>
-                      <div className="text-gray-300">13.00</div>
+                      <div className="text-gray-500">13.00</div>
                     </div>
-                    <div className="flex items-start justify-between w-full text-gray-300 border-b py-4">
+                    <div className="flex items-start justify-between w-full text-gray-500 border-b py-4">
                       <div>son gelen mesajlar burada yer ....</div>
                       <div>dd</div>
                     </div>
