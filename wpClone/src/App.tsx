@@ -10,6 +10,7 @@ const SERVER_URL = "http://localhost:3001";
 
 function App() {
   const [persons, setPersons] = useState([]);
+  const [allChats, setAllChats] = useState([]);
 
   const [newChat, setNewChat] = useState(true);
   const handleNewChat = () => {
@@ -21,9 +22,18 @@ function App() {
     socket.on("connect", () => {
       console.log("socket ile bağlantı kuruldu");
     });
+
+    const handleSetIncomingMessages = (chat) => {
+      setAllChats(chat);
+      console.log("app fonksiyon içi chat dosyası", allChats);
+    };
     socket.on("initialData", (persons) => {
       setPersons(persons);
       console.log("appppp", persons);
+    });
+    socket.on("allIncomingMessages", (socketFilteredMessages) => {
+      handleSetIncomingMessages(socketFilteredMessages);
+      console.log("app all chats", allChats);
     });
 
     // Socket.IO işlemlerini burada gerçekleştirin
@@ -41,7 +51,7 @@ function App() {
         <Navbar></Navbar>
         <div>
           {" "}
-          <Chats personss={persons} handleNewChat={handleNewChat}>
+          <Chats allChats={allChats} handleNewChat={handleNewChat}>
             {" "}
           </Chats>
           <Persons

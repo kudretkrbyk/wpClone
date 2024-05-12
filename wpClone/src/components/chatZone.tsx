@@ -12,7 +12,7 @@ export default function ChatZone() {
   const selectedPerson = useStore((state) => state.selectedPerson);
   console.log("chat sayfası selectedperson", selectedPerson);
   return (
-    <div className="w-[800px] h-screen">
+    <div className="w-full h-screen">
       {" "}
       {selectedPerson ? (
         <div className="   h-screen flex flex-col items-center justify-between">

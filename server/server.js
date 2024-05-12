@@ -4,6 +4,10 @@ const http = require("http");
 const socketIo = require("socket.io");
 
 const getPersons = require("./requests/getPersons");
+const getFilteredPerson = require("./requests/getFilteredPerson");
+const getMessages = require("./requests/getMessages");
+
+const addMessages = require("./requests/addMessages");
 
 const port = process.env.PORT || 3001;
 const app = express();
@@ -25,10 +29,18 @@ admin.initializeApp({
 
 const db = admin.firestore();
 let persons = [];
+let socketFilteredMessages = [];
 // İlk başta verileri alıyoruz
 getPersons((getPersons) => {
   persons = getPersons;
 });
+const filterId = "110"; // Filtrelemek istediğiniz kullanıcının ID'si
+getMessages((filteredMessages) => {
+  console.log("server", filteredMessages);
+  socketFilteredMessages = filteredMessages;
+}, filterId);
+
+//addMessages();
 
 // Socket bağlantı olayını dinle
 io.on("connection", (socket) => {
@@ -36,6 +48,7 @@ io.on("connection", (socket) => {
 
   // Bağlı istemcilere mevcut kişileri gönder
   socket.emit("initialData", persons);
+  socket.emit("allIncomingMessages", socketFilteredMessages);
 
   // Bağlantı kesilme olayını dinleyin
   socket.on("disconnect", () => {

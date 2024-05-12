@@ -143,7 +143,7 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
                           <div className="text-gray-500">13.00</div>
                         </div>
                         <div className="flex items-start justify-between w-full text-gray-500 border-b py-4">
-                          <div>son gelen mesajlar burada yer ....</div>
+                          <div> {person.About} </div>
                           <div>dd</div>
                         </div>
                       </div>
