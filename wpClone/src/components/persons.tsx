@@ -6,7 +6,7 @@ import { MdOutlineFilterList } from "react-icons/md";
 import { HiMiniArrowLeft } from "react-icons/hi2";
 
 export default function Persons({ persons, newChat, handleNewChat }: any) {
-  //global store tanımı
+  //global store persons tanımı
   const selectedPerson = useStore((state) => state.selectedPerson);
   const setSelectedPerson = useStore((state) => state.setSelectedPerson);
   // Seçili kişiyi ayarlamak için setSelectedPerson fonksiyonunu kullanabilirsiniz
@@ -91,7 +91,7 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
             <div className="flex items-center justify-start gap-4 p-4">
               {" "}
               <div className="font-bold text-xl  rounded-full  bg-green-500 w-12 h-12 flex items-center justify-center">
-                <i onClick={handleNewChat} className=" text-white  ">
+                <i onClick={handleNewChat} className=" text-white p-4 ">
                   <HiMiniArrowLeft />
                 </i>
               </div>
@@ -101,7 +101,7 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
             <div className="flex items-center justify-start gap-4 p-4 ">
               {" "}
               <div className="font-bold text-xl  rounded-full  bg-green-500 w-12 h-12 flex items-center justify-center">
-                <i onClick={handleNewChat} className=" text-white  ">
+                <i onClick={handleNewChat} className=" text-white p-4  ">
                   <HiMiniArrowLeft />
                 </i>
               </div>
