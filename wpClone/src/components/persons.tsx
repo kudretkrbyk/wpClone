@@ -39,19 +39,17 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
   console.log("newchat", newChat);
   useEffect(() => {
     if (newChat) {
-      setWidth("0px");
+      setWidth("-left-full");
     } else {
-      setWidth("500px");
+      setWidth("left-16");
     }
   }, [newChat]);
 
   console.log("w:", width);
   return (
     <div
-      className={`absolute  w-${width} h-screen bg-white top-0 left-16 duration-300  ${
-        width === "0px" ? "hidden" : "inline"
-      } `}
-      style={{ width: width }} // Burada genişlik durumunu stil olarak ayarlayın
+      className={`absolute  w-[500px] h-screen bg-white top-0 duration-300 ${width} z-0 `}
+      // Burada genişlik durumunu stil olarak ayarlayın
     >
       <div
         className={`"  flex flex-col items-center justify-center gap-3 h-screen  transition-width duration-500 ease-in-out "`}

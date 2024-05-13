@@ -4,18 +4,6 @@ const addMessages = async (message) => {
   const serviceAccount = require("../key.json");
   const db = admin.firestore();
   try {
-    const message = {
-      Content: "serverdan gönderilen Merhaba veri tabanı mesajı",
-      _Date: "11.05.2024",
-      MessageId: "100",
-      ChatId: "1",
-      dHour: "18.16",
-      isRead: false,
-      forwarded: false,
-      ReceiverId: "110",
-      SenderId: "1",
-    };
-
     // messages koleksiyonuna referans oluştur
     const messagesRef = db.collection("messages");
 

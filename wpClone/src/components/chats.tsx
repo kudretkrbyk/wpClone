@@ -87,12 +87,6 @@ export default function Chats({ allChats, handleNewChat }: any) {
                         <div className="text-gray-600">{person.Name}</div>
                         <div className="text-gray-500">
                           {sortedMessages[1]?._Date}
-                          {console.log(
-                            "0",
-                            sortedMessages[0],
-                            "1",
-                            sortedMessages[1]
-                          )}
                         </div>
                       </div>
                       <div className="flex items-start justify-between w-full text-gray-500 border-b py-4">
@@ -102,10 +96,10 @@ export default function Chats({ allChats, handleNewChat }: any) {
                           onClick={handleMessagesMenu}
                         >
                           <i>
-                            <IoIosArrowDown className="hidden group-hover:inline size-7" />
+                            <IoIosArrowDown className="  opacity-0 group-hover:opacity-100 size-7" />
                           </i>
                           {messagesMenuControl ? (
-                            <div className="absolute rounded-md p-4 -left-40 top-10 shadow-xl w-48 h-56 flex flex-col items-start justify-center gap-3 bg-white">
+                            <div className="absolute rounded-md p-4 -left-40 top-10 shadow-xl w-48 h-56 flex flex-col items-start justify-center gap-3 bg-white z-0">
                               <div>Sohbeti arşivle</div>
                               <div>Bildirimleri Sessize al</div>
                               <div>Sohbeti sil</div>

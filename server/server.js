@@ -48,7 +48,16 @@ io.on("connection", (socket) => {
 
   // Bağlı istemcilere mevcut kişileri gönder
   socket.emit("initialData", persons);
+  //istemciye alıcısı istemci olduğu mesajları gönder
   socket.emit("allIncomingMessages", socketFilteredMessages);
+
+  socket.on("sendingMessage", async (sendingMessageData) => {
+    console.log(
+      "server tarafına gelen gönderilecek mesajlar:",
+      sendingMessageData
+    );
+    addMessages(sendingMessageData);
+  });
 
   // Bağlantı kesilme olayını dinleyin
   socket.on("disconnect", () => {

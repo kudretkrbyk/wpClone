@@ -7,7 +7,7 @@ import { IoMdSettings } from "react-icons/io";
 
 export default function Navbar() {
   return (
-    <div className="w-[60px] h-full">
+    <div className="w-[60px] h-full z-50">
       {" "}
       <div className="  bg-gray-100   flex flex-col items-center justify-between gap-4 p-4 h-full ">
         <div className="flex flex-col items-center justify-center gap-6">

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
+import useStore from "./store/useStore.jsx";
+
 import Navbar from "./components/navbar";
 import Chats from "./components/chats";
 import ChatZone from "./components/chatZone";
@@ -9,6 +11,10 @@ import Persons from "./components/persons";
 const SERVER_URL = "http://localhost:3001";
 
 function App() {
+  const sendingMessage = useStore((state) => state.sendingMessage);
+  console.log("tarih", Date.now());
+  console.log("app sending messaje", sendingMessage);
+
   const [persons, setPersons] = useState([]);
   const [allChats, setAllChats] = useState([]);
 
@@ -35,6 +41,10 @@ function App() {
       handleSetIncomingMessages(socketFilteredMessages);
       console.log("app all chats", allChats);
     });
+    if (sendingMessage) {
+      console.log("if geldi", sendingMessage);
+      socket.emit("sendingMessage", sendingMessage);
+    }
 
     // Socket.IO işlemlerini burada gerçekleştirin
 

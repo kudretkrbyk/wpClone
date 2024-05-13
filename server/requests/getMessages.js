@@ -15,7 +15,8 @@ const getMessages = async (callback, filterId) => {
     // Mesajları al
     const messagesRef = db
       .collection("messages")
-      .where("ReceiverId", "==", filterId);
+      .where("ReceiverId", "==", filterId)
+      .where("SenderId", "==", filterId);
     const messagesSnapshot = await messagesRef.get();
 
     messagesSnapshot.forEach((doc) => {
