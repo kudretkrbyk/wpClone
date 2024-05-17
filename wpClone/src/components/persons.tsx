@@ -5,18 +5,26 @@ import { MdOutlineFilterList } from "react-icons/md";
 //import { RiGroupLine } from "react-icons/ri";
 import { HiMiniArrowLeft } from "react-icons/hi2";
 
-export default function Persons({ persons, newChat, handleNewChat }: any) {
+export default function Persons({ newChat, handleNewChat, socket }: any) {
   //global store persons tanımı
   const selectedPerson = useStore((state) => state.selectedPerson);
   const setSelectedPerson = useStore((state) => state.setSelectedPerson);
+
+  //ChatZone Alanını kotrol etmek için kullanılan gloal store
+
+  const setChatZoneControl = useStore((state) => state.setChatZoneControl);
   // Seçili kişiyi ayarlamak için setSelectedPerson fonksiyonunu kullanabilirsiniz
   const handleSelectPerson = (person) => {
     setSelectedPerson(person);
     console.log("selectedperson", selectedPerson);
+    setChatZoneControl("2");
   };
-  console.log("selectedperson", selectedPerson);
+
+  const [persons, setPersons] = useState([]);
   // İsimlere göre sıralama
-  persons.sort((a, b) => a.Name.localeCompare(b.Name));
+  if (persons !== null) {
+    persons.sort((a, b) => a.Name.localeCompare(b.Name));
+  }
 
   // Harf bölümlerini içerecek bir nesne oluşturma
   const groupedPersons: { [key: string]: any[] } = {};
@@ -33,10 +41,8 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
   // Diziyi oluşturma
   const groupedPersonsArray = Object.entries(groupedPersons);
 
-  // Sonuçları konsola yazdırma
-
   const [width, setWidth] = useState();
-  console.log("newchat", newChat);
+  //console.log("newchat", newChat);
   useEffect(() => {
     if (newChat) {
       setWidth("-left-full");
@@ -44,8 +50,12 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
       setWidth("left-16");
     }
   }, [newChat]);
-
-  console.log("w:", width);
+  useEffect(() => {
+    socket.on("initialData", (persons) => {
+      setPersons(persons);
+      //console.log("appppp", persons);
+    });
+  });
   return (
     <div
       className={`absolute  w-[500px] h-screen bg-white top-0 duration-300 ${width} z-0 `}
@@ -138,11 +148,9 @@ export default function Persons({ persons, newChat, handleNewChat }: any) {
                       <div className="flex flex-col items-start justify-center w-full">
                         <div className="flex items-start justify-between w-full">
                           <div className="text-black">{person.Name}</div>
-                          <div className="text-gray-500">13.00</div>
                         </div>
                         <div className="flex items-start justify-between w-full text-gray-500 border-b py-4">
                           <div> {person.About} </div>
-                          <div>dd</div>
                         </div>
                       </div>
                     </div>

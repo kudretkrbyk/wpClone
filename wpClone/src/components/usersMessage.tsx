@@ -1,7 +1,9 @@
 //import React from "react";
 import useStore from "../store/useStore.jsx";
 
-import { v4 as uuidv4 } from "uuid";
+import { handleSendMessage } from "../functions/sendMessage.js";
+
+//import { v4 as uuidv4 } from "uuid";
 
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { LuSearch } from "react-icons/lu";
@@ -9,55 +11,63 @@ import { IoVideocam } from "react-icons/io5";
 import { FaRegSmile } from "react-icons/fa";
 import { FaPlus } from "react-icons/fa";
 import { FaMicrophone } from "react-icons/fa";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function UserMessage() {
-  const uniqueId = uuidv4();
+export default function UserMessage({ socket }) {
+  //const uniqueId = uuidv4();
+  const [userMessages, setUserMessages] = useState("");
 
   const [sendMessage, setSendMessage] = useState("");
   //global store SelectedChat tanımı
   const selectedChat = useStore((state) => state.selectedChat);
+  //Mesajı gönderen kişinin userId bilgisi
   const itsMeId = useStore((state) => state.itsMeId);
+  //Seçilen Chat'in mesajları
+  const [selectedChatMessages, setSelectedChatMessages] = useState([]);
 
-  //global store SelectedChat tanımı
-  const sendingMessage = useStore((state) => state.sendingMessage);
-  const setSendingMessage = useStore((state) => state.setSendingMessage);
-  //const setSelectedPerson = useStore((state) => state.setSelectedPerson);
-  //console.log("users Message", selectedChat.Messages);
-
-  console.log("göndermeye çalışılan mesaj ", sendingMessage);
-  console.log("seçilen mesaj bilgileri", selectedChat);
-
-  selectedChat.Messages.map((message, index) => {
-    console.log(message); // Her bir mesajı konsol log'unda gösterir
-    // Burada her bir mesaj için yapılacak işlemleri gerçekleştirebilirsiniz
+  useEffect(() => {
+    socket.on("selectedChatMessages", (selectedChatData) => {
+      setSelectedChatMessages(selectedChatData);
+    });
   });
-  console.log("benim id", itsMeId);
 
-  const handleSendMessage = () => {
-    if (sendMessage.trim() !== "") {
-      const sender = "support";
-
-      setSendingMessage({
-        Content: sendMessage,
-        _Date: "11.05.2024",
-        MessageId: uniqueId,
-        ChatId: selectedChat.Messages[0].ChatId,
-
-        isRead: false,
-        forwarded: false,
-        ReceiverId: selectedChat.userId,
-        SenderId: itsMeId,
+  useEffect(() => {
+    console.log("usermessage selectedChatMessages", selectedChatMessages);
+    if (selectedChatMessages) {
+      const sortedMessages = selectedChatMessages.slice().sort((a, b) => {
+        const dateA = new Date(a._Date);
+        const dateB = new Date(b._Date);
+        return dateA - dateB;
       });
-
-      setSendMessage("");
+      setUserMessages(sortedMessages);
     }
-  };
+  }, [selectedChatMessages]);
+
+  console.log("userChat sayfası *** gelen mesajlar:", userMessages);
+  console.log(
+    "user message sayfası selectedChatMessages",
+    selectedChatMessages
+  );
+
+  console.log("1212userMessage içi selected message", selectedChat["userId"]);
 
   const handleEnterKeyPress = (event) => {
+    const ChatId = userMessages[0].ChatId;
+    const ReceiverId = selectedChat["userId"];
     if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleSendMessage();
+      const newMessage = handleSendMessage(
+        sendMessage,
+        itsMeId,
+        ChatId,
+        ReceiverId
+      );
+      console.log("geri geln mesaj", newMessage);
+      if (newMessage) {
+        console.log("if çalıtı users message");
+
+        socket.emit("sendingMessage", newMessage);
+      }
+      setSendMessage("");
     }
   };
 
@@ -101,29 +111,43 @@ export default function UserMessage() {
               bg-center bg-cover sze w-full overflow-hidden overflow-y-scroll h-full"
         >
           <div className="">
-            {selectedChat.Messages.map((message, index) => (
-              <div key={index}>
-                {message.ReceiverId === selectedChat.UserId ? (
-                  <div id="sendingMessage" className="p-6 flex justify-end">
-                    <div className="flex  gap-1 bg-white items-end justify-end shadow-xl rounded-xl rounded-tl-sm p-1">
-                      <span className="p-2 text-black border-gray-200    dark:text-white">
-                        {message.Content}
-                      </span>
-                      <span className="text-gray-500">{message.dHour} </span>
+            {userMessages &&
+              userMessages.map((message, index) => (
+                <div key={index}>
+                  {message.SenderId === itsMeId ? (
+                    <div id="sendingMessage" className="p-6 flex justify-end">
+                      <div className="flex  gap-1 bg-white items-end justify-end shadow-xl rounded-xl rounded-tl-sm p-1">
+                        <span className="p-2 text-black border-gray-200    dark:text-white">
+                          {message.Content}
+                        </span>
+                        <span className="text-gray-500">
+                          {new Date(message._Date).toLocaleTimeString("tr-TR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div id="incomingMessage" className="flex justify-start p-6">
-                    <div className="flex  gap-1 bg-white items-end justify-end shadow-xl rounded-xl rounded-tl-sm p-1">
-                      <span className="p-2 text-black border-gray-200    dark:text-white">
-                        {message.Content}
-                      </span>
-                      <span className="text-gray-500">{message.dHour} </span>
+                  ) : (
+                    <div
+                      id="incomingMessage"
+                      className="flex justify-start p-6"
+                    >
+                      <div className="flex  gap-1 bg-white items-end justify-end shadow-xl rounded-xl rounded-tl-sm p-1">
+                        <span className="p-2 text-black border-gray-200    dark:text-white">
+                          {message.Content}
+                        </span>
+                        <span className="text-gray-500">
+                          {new Date(message._Date).toLocaleTimeString("tr-TR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ))}
           </div>
         </div>{" "}
         <div className=" bg-gray-300 flex items-center justify-end gap-4 w-full p-4 h-20 ">
@@ -140,7 +164,7 @@ export default function UserMessage() {
               value={sendMessage}
               type="text"
               placeholder="Bir Mesaj Yazın"
-              className=" cursor-text  rounded-lg bg-gray-200 text-[#8796a1] text-sm font-light  px-4 py-2 w-full h-[35px] placeholder:p-4 "
+              className=" cursor-text  rounded-lg bg-gray-200 text-black text-sm font-light  p-2 w-full h-[35px]  "
             />
           </div>
           <div>

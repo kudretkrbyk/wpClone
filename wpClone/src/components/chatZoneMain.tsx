@@ -2,8 +2,8 @@ import { GrSecure } from "react-icons/gr";
 
 export default function ChatZoneMain() {
   return (
-    <div className="flex flex-col gap-10 items-center justify-end w-full h-full p-4">
-      <div className="bg-[url(https://static.whatsapp.net/rsrc.php/v3/y6/r/wa669aeJeom.png)] bg-center bg-cover w-[320px] h-48">
+    <div className="flex flex-col gap-8 items-center justify-end w-full h-full p-4">
+      <div className="bg-[url(https://static.whatsapp.net/rsrc.php/v3/y6/r/wa669aeJeom.png)] bg-center bg-cover w-[320px] h-56">
         {" "}
       </div>
       <div className="text-3xl text-gray-500">

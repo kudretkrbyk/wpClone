@@ -3,17 +3,48 @@ import { HiOutlineDotsVertical } from "react-icons/hi";
 import { LuSearch } from "react-icons/lu";
 import { TbMessagePlus } from "react-icons/tb";
 import { IoIosArrowDown } from "react-icons/io";
-import { useState } from "react";
-import useStore from "../store/useStore.jsx";
 
-export default function Chats({ allChats, handleNewChat }: any) {
-  const selectedChat = useStore((state) => state.selectedChat);
+import useStore from "../store/useStore.jsx";
+import { useEffect, useState } from "react";
+
+export default function Chats({ handleNewChat, socket }: any) {
+  //console.log("all chats", allChats);
+  // const selectedChat = useStore((state) => state.selectedChat);
+  //const selectedChat = useStore((state) => state.selectedChat);
   const setSelectedChat = useStore((state) => state.setSelectedChat);
+
+  const [allChatThisComp, setAllChatThisComp] = useState([]);
+
+  //ChatZone Alanını kotrol etmek için kullanılan gloal store
+  //const chatZoneControl = useStore((state) => state.chatZoneControl);
+  const setChatZoneControl = useStore((state) => state.setChatZoneControl);
+
+  useEffect(() => {
+    socket.on("allIncomingMessages", (socketFilteredMessages) => {
+      setAllChatThisComp(socketFilteredMessages);
+      console.log("chats", socketFilteredMessages);
+    });
+  }, [socket]);
+
+  console.log("useeffect dışı all chat tc", allChatThisComp);
+
   const handleSelectedChat = (person) => {
+    console.log("selected messages", person.Messages[0].ChatId);
+    console.log("selected messages", person);
     setSelectedChat(person);
-    console.log("selected messages", selectedChat);
+    setChatZoneControl("1");
+    socket.emit("selectedChat", person["Messages"][0].ChatId);
   };
 
+  const handleDeleteChat = (person) => {
+    //setDeleteChatId = person.Messages[0].ChatId;
+    console.log("delet chats", person);
+    console.log("deletchats", person.Messages[0].ChatId);
+
+    socket.emit("deleteChatId", person.Messages[0].ChatId);
+  };
+
+  console.log("chats sayfası ", allChatThisComp);
   const [messagesMenuControl, setMessagesMenuControl] = useState(false);
   const handleMessagesMenu = () => {
     setMessagesMenuControl(!messagesMenuControl);
@@ -60,13 +91,13 @@ export default function Chats({ allChats, handleNewChat }: any) {
         </div>
         <div className="flex flex-col w-full h-full overflow-y-scroll">
           <div className="flex w-full h-full item-center justify-center">
-            <div className="flex flex-col items-center justify-between gap-3 w-full p-3 h-full">
-              {allChats.map((person, index) => {
-                // Mesajları tarih ve saate göre ters sırala
+            <div className="flex flex-col items-center justify-start gap-3 w-full p-3 h-full">
+              {allChatThisComp.map((person, index) => {
+                // Mesajları tarihe göre ters sırala
                 const sortedMessages = person.Messages.slice().sort((a, b) => {
-                  // Tarih ve saat bilgisine göre sırala (daha yeni olan daha önce gelecek)
-                  const dateA = new Date(a._Date + " " + a.dHour);
-                  const dateB = new Date(b._Date + " " + b.dHour);
+                  // Tarih bilgisine göre sırala (daha yeni olan daha önce gelecek)
+                  const dateA = new Date(a._Date);
+                  const dateB = new Date(b._Date);
                   return dateB - dateA; // Ters sıralama için dateB - dateA
                 });
 
@@ -86,11 +117,13 @@ export default function Chats({ allChats, handleNewChat }: any) {
                       <div className="flex items-start justify-between w-full">
                         <div className="text-gray-600">{person.Name}</div>
                         <div className="text-gray-500">
-                          {sortedMessages[1]?._Date}
+                          {new Date(sortedMessages[0]._Date).toLocaleDateString(
+                            "tr-TR"
+                          )}
                         </div>
                       </div>
                       <div className="flex items-start justify-between w-full text-gray-500 border-b py-4">
-                        <div>{sortedMessages[1]?.Content}</div>
+                        <div>{sortedMessages[0]?.Content}</div>
                         <div
                           className="flex relative"
                           onClick={handleMessagesMenu}
@@ -99,10 +132,12 @@ export default function Chats({ allChats, handleNewChat }: any) {
                             <IoIosArrowDown className="  opacity-0 group-hover:opacity-100 size-7" />
                           </i>
                           {messagesMenuControl ? (
-                            <div className="absolute rounded-md p-4 -left-40 top-10 shadow-xl w-48 h-56 flex flex-col items-start justify-center gap-3 bg-white z-0">
-                              <div>Sohbeti arşivle</div>
+                            <div className=" opacity-0 group-hover:opacity-100 absolute rounded-md p-4 -left-40 top-10 shadow-xl w-48 h-56 flex flex-col items-start justify-center gap-3 bg-white z-0">
+                              <div className="">Sohbeti arşivle</div>
                               <div>Bildirimleri Sessize al</div>
-                              <div>Sohbeti sil</div>
+                              <div onClick={() => handleDeleteChat(person)}>
+                                Sohbeti sil
+                              </div>
                               <div>Sohbeti Sabitle</div>
                               <div>Okunmadı olarak işaretle</div>
                               <div>Engelle</div>

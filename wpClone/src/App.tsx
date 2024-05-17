@@ -1,77 +1,54 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-import useStore from "./store/useStore.jsx";
-
 import Navbar from "./components/navbar";
 import Chats from "./components/chats";
 import ChatZone from "./components/chatZone";
 import Persons from "./components/persons";
+import IdInput from "./components/idİnput.js";
+import useStore from "./store/useStore.jsx";
 
 const SERVER_URL = "http://localhost:3001";
 
 function App() {
-  const sendingMessage = useStore((state) => state.sendingMessage);
-  console.log("tarih", Date.now());
-  console.log("app sending messaje", sendingMessage);
-
-  const [persons, setPersons] = useState([]);
-  const [allChats, setAllChats] = useState([]);
-
   const [newChat, setNewChat] = useState(true);
   const handleNewChat = () => {
     setNewChat(!newChat);
   };
-  console.log("app ", newChat);
+  const itsMeId = useStore((state) => state.itsMeId);
+
+  const socket = io(SERVER_URL);
   useEffect(() => {
     const socket = io(SERVER_URL);
     socket.on("connect", () => {
       console.log("socket ile bağlantı kuruldu");
     });
-
-    const handleSetIncomingMessages = (chat) => {
-      setAllChats(chat);
-      console.log("app fonksiyon içi chat dosyası", allChats);
-    };
-    socket.on("initialData", (persons) => {
-      setPersons(persons);
-      console.log("appppp", persons);
-    });
-    socket.on("allIncomingMessages", (socketFilteredMessages) => {
-      handleSetIncomingMessages(socketFilteredMessages);
-      console.log("app all chats", allChats);
-    });
-    if (sendingMessage) {
-      console.log("if geldi", sendingMessage);
-      socket.emit("sendingMessage", sendingMessage);
+    if (itsMeId) {
+      socket.emit("senderId", itsMeId);
     }
-
-    // Socket.IO işlemlerini burada gerçekleştirin
 
     return () => {
       socket.disconnect(); // Komponent temizlendiğinde soketi kapat
     };
-  }, []);
-  console.log("app", persons);
+  }, [socket]);
 
   return (
     <>
-      {" "}
+      {!itsMeId && <IdInput></IdInput>}
+
       <div className="w-full flex items-start justify-start  h-screen overflow-hidden">
         <Navbar></Navbar>
         <div>
           {" "}
-          <Chats allChats={allChats} handleNewChat={handleNewChat}>
-            {" "}
-          </Chats>
+          <Chats socket={socket} handleNewChat={handleNewChat}></Chats>
           <Persons
-            persons={persons}
             newChat={newChat}
             handleNewChat={handleNewChat}
+            socket={socket}
           ></Persons>
         </div>
 
-        <ChatZone></ChatZone>
+        <ChatZone socket={socket}></ChatZone>
       </div>
     </>
   );

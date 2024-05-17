@@ -6,8 +6,16 @@ const socketIo = require("socket.io");
 const getPersons = require("./requests/getPersons");
 const getFilteredPerson = require("./requests/getFilteredPerson");
 const getMessages = require("./requests/getMessages");
+const getOneUserMessages = require("./requests/getOneUserMessages");
+const emitSelectedChatMessages = require("./functions/emitChatFunc");
+const deleteChat = require("./requests/deleteChat");
+const emitIncomingMessages = require("./functions/emitIncomingMessage");
 
 const addMessages = require("./requests/addMessages");
+
+let ChatId = "";
+let globalSocket;
+let newChatId;
 
 const port = process.env.PORT || 3001;
 const app = express();
@@ -34,29 +42,89 @@ let socketFilteredMessages = [];
 getPersons((getPersons) => {
   persons = getPersons;
 });
-const filterId = "110"; // Filtrelemek istediğiniz kullanıcının ID'si
-getMessages((filteredMessages) => {
-  console.log("server", filteredMessages);
-  socketFilteredMessages = filteredMessages;
-}, filterId);
+let filterId = null; // Filtrelemek istediğiniz kullanıcının ID'si frontend den gelecek!
+//const numericFilterId = Number(filterId);
 
 //addMessages();
 
 // Socket bağlantı olayını dinle
+
 io.on("connection", (socket) => {
   console.log("Bir kullanıcı bağlandı");
+  socket.on("senderId", async (idData) => {
+    filterId = idData;
+    console.log("filterid", filterId);
+  });
+
+  getMessages(
+    (filteredMessages) => {
+      socketFilteredMessages = filteredMessages;
+      console.log("gelen mesajlar", filteredMessages);
+      emitIncomingMessages(socket, socketFilteredMessages);
+    },
+
+    filterId
+  );
 
   // Bağlı istemcilere mevcut kişileri gönder
   socket.emit("initialData", persons);
-  //istemciye alıcısı istemci olduğu mesajları gönder
-  socket.emit("allIncomingMessages", socketFilteredMessages);
+  socket.on("selectedChat", async (selectedChat) => {
+    console.log("selectedChat spcketon geldi", selectedChat);
+    ChatId = selectedChat; // selectedChat içinden UserId değerini alın
+    getOneUserMessages((callback) => {
+      let selectedChatMessages = callback;
+      socket.emit("selectedChatMessages", selectedChatMessages);
+    }, ChatId);
 
+    await emitSelectedChatMessages(socket, ChatId);
+  });
+
+  //Database mesaj ekleme
   socket.on("sendingMessage", async (sendingMessageData) => {
+    console.log("DB tarafına gelen gönderilecek mesajlar:", sendingMessageData);
     console.log(
-      "server tarafına gelen gönderilecek mesajlar:",
+      "DB tarafına gelen gönderilecek mesajlar:",
+      sendingMessageData.ChatId
+    );
+    const newChatId = sendingMessageData.ChatId; // Yeni bir chat ID al
+
+    // addMessages fonksiyonunu çağırın ve içinde getOneUserMessages fonksiyonunu çağırın
+    addMessages(
+      (callback) => {
+        getMessages((filteredMessages) => {
+          socketFilteredMessages = filteredMessages;
+          emitIncomingMessages(socket, socketFilteredMessages);
+        }, filterId);
+        getOneUserMessages((newMessages) => {
+          let selectedNewChatMessages = newMessages;
+          console.log("gom server", selectedNewChatMessages);
+          socket.emit("newChatMessages", selectedNewChatMessages);
+        }, newChatId);
+      },
+      filterId,
       sendingMessageData
     );
-    addMessages(sendingMessageData);
+  });
+
+  socket.on("selectedChat", async (selectedChat) => {
+    console.log("selectedChat spcketon geldi", selectedChat);
+    ChatId = selectedChat; // selectedChat içinden UserId değerini alın
+
+    // getOneUserMessages fonksiyonunu çağırırken ReceiverId olarak UserId değerini kullanın
+    await emitSelectedChatMessages(socket, ChatId);
+  });
+
+  socket.on("deleteChatId", async (deleteChatId) => {
+    await deleteChat(deleteChatId);
+    await getMessages(
+      (filteredMessages) => {
+        socketFilteredMessages = filteredMessages;
+        //console.log("gelen mesajlar", filteredMessages);
+        socket.emit("allIncomingMessages", socketFilteredMessages);
+      },
+
+      filterId
+    );
   });
 
   // Bağlantı kesilme olayını dinleyin
