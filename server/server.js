@@ -4,23 +4,15 @@ const http = require("http");
 const socketIo = require("socket.io");
 
 const getPersons = require("./requests/getPersons");
-const getFilteredPerson = require("./requests/getFilteredPerson");
 const getMessages = require("./requests/getMessages");
 const getOneUserMessages = require("./requests/getOneUserMessages");
 const emitSelectedChatMessages = require("./functions/emitChatFunc");
 const deleteChat = require("./requests/deleteChat");
 const emitIncomingMessages = require("./functions/emitIncomingMessage");
-
 const addMessages = require("./requests/addMessages");
-
-let ChatId = "";
-let globalSocket;
-let newChatId;
 
 const port = process.env.PORT || 3001;
 const app = express();
-
-// Socket.IO'yu HTTP sunucusuna bağlayın
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
@@ -38,98 +30,91 @@ admin.initializeApp({
 const db = admin.firestore();
 let persons = [];
 let socketFilteredMessages = [];
+
 // İlk başta verileri alıyoruz
 getPersons((getPersons) => {
   persons = getPersons;
 });
-let filterId = null; // Filtrelemek istediğiniz kullanıcının ID'si frontend den gelecek!
-//const numericFilterId = Number(filterId);
-
-//addMessages();
-
-// Socket bağlantı olayını dinle
 
 io.on("connection", (socket) => {
   console.log("Bir kullanıcı bağlandı");
-  socket.on("senderId", async (idData) => {
-    filterId = idData;
-    console.log("filterid", filterId);
-  });
 
-  getMessages(
-    (filteredMessages) => {
-      socketFilteredMessages = filteredMessages;
-      console.log("gelen mesajlar", filteredMessages);
-      emitIncomingMessages(socket, socketFilteredMessages);
-    },
+  socket.on("joinRoom", (userId) => {
+    console.log(`Kullanıcı ${socket.id}, ${userId} odasına katıldı`);
+    socket.join(userId);
 
-    filterId
-  );
-
-  // Bağlı istemcilere mevcut kişileri gönder
-  socket.emit("initialData", persons);
-  socket.on("selectedChat", async (selectedChat) => {
-    console.log("selectedChat spcketon geldi", selectedChat);
-    ChatId = selectedChat; // selectedChat içinden UserId değerini alın
-    getOneUserMessages((callback) => {
-      let selectedChatMessages = callback;
-      socket.emit("selectedChatMessages", selectedChatMessages);
-    }, ChatId);
-
-    await emitSelectedChatMessages(socket, ChatId);
-  });
-
-  //Database mesaj ekleme
-  socket.on("sendingMessage", async (sendingMessageData) => {
-    console.log("DB tarafına gelen gönderilecek mesajlar:", sendingMessageData);
-    console.log(
-      "DB tarafına gelen gönderilecek mesajlar:",
-      sendingMessageData.ChatId
-    );
-    const newChatId = sendingMessageData.ChatId; // Yeni bir chat ID al
-
-    // addMessages fonksiyonunu çağırın ve içinde getOneUserMessages fonksiyonunu çağırın
-    addMessages(
-      (callback) => {
-        getMessages((filteredMessages) => {
-          socketFilteredMessages = filteredMessages;
-          emitIncomingMessages(socket, socketFilteredMessages);
-        }, filterId);
-        getOneUserMessages((newMessages) => {
-          let selectedNewChatMessages = newMessages;
-          console.log("gom server", selectedNewChatMessages);
-          socket.emit("newChatMessages", selectedNewChatMessages);
-        }, newChatId);
-      },
-      filterId,
-      sendingMessageData
-    );
-  });
-
-  socket.on("selectedChat", async (selectedChat) => {
-    console.log("selectedChat spcketon geldi", selectedChat);
-    ChatId = selectedChat; // selectedChat içinden UserId değerini alın
-
-    // getOneUserMessages fonksiyonunu çağırırken ReceiverId olarak UserId değerini kullanın
-    await emitSelectedChatMessages(socket, ChatId);
-  });
-
-  socket.on("deleteChatId", async (deleteChatId) => {
-    await deleteChat(deleteChatId);
-    await getMessages(
+    getMessages(
       (filteredMessages) => {
         socketFilteredMessages = filteredMessages;
-        //console.log("gelen mesajlar", filteredMessages);
-        socket.emit("allIncomingMessages", socketFilteredMessages);
+        console.log("gelen mesajlar ,", filteredMessages);
+        emitIncomingMessages(io, socketFilteredMessages, userId);
       },
-
-      filterId
+      userId,
+      persons
     );
-  });
 
-  // Bağlantı kesilme olayını dinleyin
-  socket.on("disconnect", () => {
-    console.log("Bir kullanıcı ayrıldı");
+    io.to(userId).emit("initialData", persons);
+
+    socket.on("selectedChat", async (selectedChat) => {
+      console.log("selectedChat socket.on geldi", selectedChat);
+      ChatId = selectedChat;
+      getOneUserMessages((callback) => {
+        let selectedChatMessages = callback;
+        io.to(userId).emit("selectedChatMessages", selectedChatMessages);
+      }, ChatId);
+      await emitSelectedChatMessages(socket, ChatId);
+    });
+
+    socket.on("sendingMessage", async (sendingMessageData) => {
+      console.log(
+        "DB tarafına gelen gönderilecek mesajlar:",
+        sendingMessageData
+      );
+      const newChatId = sendingMessageData.ChatId;
+      addMessages(
+        (callback) => {
+          getMessages(
+            (filteredMessages) => {
+              socketFilteredMessages = filteredMessages;
+              emitIncomingMessages(socket, socketFilteredMessages);
+              const receiverId = sendingMessageData.ReceiverId;
+              console.log("mesaj ekleme kısmı geldi", socketFilteredMessages);
+              io.to(receiverId).emit("newChatMessages", socketFilteredMessages);
+            },
+            userId,
+            persons
+          );
+          socket.emit("allIncomingMessages", socketFilteredMessages);
+
+          getOneUserMessages((newMessages) => {
+            let selectedNewChatMessages = newMessages;
+            console.log("gom server", selectedNewChatMessages);
+            io.to(userId).emit("newChatMessages", selectedNewChatMessages);
+            const receiverId = sendingMessageData.ReceiverId;
+            io.to(receiverId).emit("newChatMessages", selectedNewChatMessages);
+          }, newChatId);
+        },
+        userId,
+        sendingMessageData
+      );
+    });
+
+    socket.on("deleteChatId", async (deleteChatId) => {
+      await deleteChat(deleteChatId);
+      await getMessages(
+        (filteredMessages) => {
+          socketFilteredMessages = filteredMessages;
+          io.to(userId).emit("allIncomingMessages", socketFilteredMessages);
+        },
+        userId,
+        persons
+      );
+      socket.emit("allIncomingMessages", socketFilteredMessages);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Bir kullanıcı ayrıldı");
+    });
   });
 });
 

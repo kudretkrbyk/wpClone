@@ -20,9 +20,11 @@ function App() {
   const socket = io(SERVER_URL);
   useEffect(() => {
     const socket = io(SERVER_URL);
+
     socket.on("connect", () => {
       console.log("socket ile bağlantı kuruldu");
     });
+    socket.emit("joinRoom", itsMeId);
     if (itsMeId) {
       socket.emit("senderId", itsMeId);
     }

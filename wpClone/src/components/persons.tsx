@@ -25,6 +25,10 @@ export default function Persons({ newChat, handleNewChat, socket }: any) {
   if (persons !== null) {
     persons.sort((a, b) => a.Name.localeCompare(b.Name));
   }
+  const itsMeId = useStore((state) => state.itsMeId);
+  useEffect(() => {
+    socket.emit("joinRoom", itsMeId);
+  }, [socket]);
 
   // Harf bölümlerini içerecek bir nesne oluşturma
   const groupedPersons: { [key: string]: any[] } = {};

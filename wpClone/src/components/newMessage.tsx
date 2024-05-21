@@ -13,6 +13,9 @@ import { useState } from "react";
 import { useEffect } from "react";
 
 export default function NewMessage({ socket }) {
+  useEffect(() => {
+    socket.emit("joinRoom", itsMeId);
+  }, [socket]);
   //Seçilen Chat için global store
   //const selectedChatMessages = useStore((state) => state.selectedChatMessages);
   //Seçilen mesajı global store dan bileşene almak için

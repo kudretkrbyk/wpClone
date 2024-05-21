@@ -7,7 +7,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import useStore from "../store/useStore.jsx";
 import { useEffect, useState } from "react";
 
-export default function Chats({ handleNewChat, socket }: any) {
+export default function Chats({ handleNewChat, socket }) {
   //console.log("all chats", allChats);
   // const selectedChat = useStore((state) => state.selectedChat);
   //const selectedChat = useStore((state) => state.selectedChat);
@@ -18,13 +18,16 @@ export default function Chats({ handleNewChat, socket }: any) {
   //ChatZone Alanını kotrol etmek için kullanılan gloal store
   //const chatZoneControl = useStore((state) => state.chatZoneControl);
   const setChatZoneControl = useStore((state) => state.setChatZoneControl);
-
+  useEffect(() => {
+    socket.emit("joinRoom", itsMeId);
+  }, [socket]);
   useEffect(() => {
     socket.on("allIncomingMessages", (socketFilteredMessages) => {
       setAllChatThisComp(socketFilteredMessages);
       console.log("chats", socketFilteredMessages);
     });
   }, [socket]);
+  const itsMeId = useStore((state) => state.itsMeId);
 
   console.log("useeffect dışı all chat tc", allChatThisComp);
 
@@ -105,7 +108,7 @@ export default function Chats({ handleNewChat, socket }: any) {
                   <div
                     onClick={() => handleSelectedChat(person)}
                     key={index}
-                    className="flex items-center justify-start w-full gap-2 p-2 hover:bg-gray-200 hover:cursor-pointer group"
+                    className="flex items-center justify-start w-full gap-2 p-2 hover:bg-gray-200 hover:cursor-pointer group/item"
                   >
                     <img
                       className="p-2 rounded-full size-16 items-center object-cover"
@@ -125,14 +128,14 @@ export default function Chats({ handleNewChat, socket }: any) {
                       <div className="flex items-start justify-between w-full text-gray-500 border-b py-4">
                         <div>{sortedMessages[0]?.Content}</div>
                         <div
-                          className="flex relative"
+                          className="flex relative group/edit"
                           onClick={handleMessagesMenu}
                         >
                           <i>
-                            <IoIosArrowDown className="  opacity-0 group-hover:opacity-100 size-7" />
+                            <IoIosArrowDown className="  opacity-0 group-hover/item:opacity-100 size-7" />
                           </i>
                           {messagesMenuControl ? (
-                            <div className=" opacity-0 group-hover:opacity-100 absolute rounded-md p-4 -left-40 top-10 shadow-xl w-48 h-56 flex flex-col items-start justify-center gap-3 bg-white z-0">
+                            <div className=" hidden group-hover/edit:inline absolute rounded-md p-4 -left-40 top-5 shadow-xl w-48 h-56 flex flex-col items-start justify-center gap-3 bg-white z-0">
                               <div className="">Sohbeti arşivle</div>
                               <div>Bildirimleri Sessize al</div>
                               <div onClick={() => handleDeleteChat(person)}>

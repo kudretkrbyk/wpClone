@@ -28,8 +28,15 @@ export default function UserMessage({ socket }) {
   useEffect(() => {
     socket.on("selectedChatMessages", (selectedChatData) => {
       setSelectedChatMessages(selectedChatData);
+      console.log("userMess selectedChatMessages", selectedChatData);
     });
-  });
+  }, [socket]);
+  useEffect(() => {
+    socket.on("newChatMessages", (selectedChatData) => {
+      setSelectedChatMessages(selectedChatData);
+      console.log("userMess newChatMessages", selectedChatData);
+    });
+  }, [socket]);
 
   useEffect(() => {
     console.log("usermessage selectedChatMessages", selectedChatMessages);
@@ -110,14 +117,14 @@ export default function UserMessage({ socket }) {
           className="bg-[url(https://i.pinimg.com/736x/8c/98/99/8c98994518b575bfd8c949e91d20548b.jpg)] 
               bg-center bg-cover sze w-full overflow-hidden overflow-y-scroll h-full"
         >
-          <div className="">
+          <div className=" ">
             {userMessages &&
               userMessages.map((message, index) => (
                 <div key={index}>
                   {message.SenderId === itsMeId ? (
-                    <div id="sendingMessage" className="p-6 flex justify-end">
-                      <div className="flex  gap-1 bg-white items-end justify-end shadow-xl rounded-xl rounded-tl-sm p-1">
-                        <span className="p-2 text-black border-gray-200    dark:text-white">
+                    <div id="sendingMessage" className="p-6 flex justify-end ">
+                      <div className="flex  gap-1 bg-white items-end justify-end shadow-xl  rounded-xl rounded-tl-sm p-1">
+                        <span className="p-2 text-black border-gray-200    dark:text-white snap-center  ">
                           {message.Content}
                         </span>
                         <span className="text-gray-500">

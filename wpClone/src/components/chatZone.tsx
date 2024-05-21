@@ -2,8 +2,13 @@ import useStore from "../store/useStore.jsx";
 import ChatZoneMain from "./chatZoneMain.js";
 import NewMessage from "./newMessage.js";
 import UserMessage from "./usersMessage.js";
+import { useEffect } from "react";
 
 export default function ChatZone({ socket }) {
+  const itsMeId = useStore((state) => state.itsMeId);
+  useEffect(() => {
+    socket.emit("joinRoom", itsMeId);
+  }, [socket]);
   //const selectedChat = useStore((state) => state.selectedChat);
   //const setSelectedChat = useStore((state) => state.setSelectedChat);
   const selectedPerson = useStore((state) => state.selectedPerson);
